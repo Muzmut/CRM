@@ -1,0 +1,466 @@
+/* css/styles.css — Финальная улучшенная версия
+   - Читабельность/контрастность для dark & light тем
+   - Полная переработка модального окна клиента (сетка, строки label/value)
+   - Виден цвет статусов (swatches) — явные бордюры и тени
+   - Улучшены selects и видимость назначений/выбора пользователей
+   - Сохранены прежние классы/идентификаторы для совместимости с JS
+*/
+
+/* -------------------- ПЕРЕМЕННЫЕ -------------------- */
+:root{
+  /* Тёмная тема (по умолчанию) */
+  --bg: #071124;
+  --surface: #0b1220;
+  --card: #071226;
+  --muted: #9aa4b2;
+  --text: #e6eef8;
+  --accent: #3b82f6;
+  --accent-600: #2563eb;
+  --success: #10b981;
+  --danger: #ef4444;
+  --glass: rgba(255,255,255,0.03);
+  --muted-contrast: rgba(230,238,248,0.75);
+  --radius: 12px;
+  --header-height: 64px;
+  --sidebar-width: 260px;
+  --btn-padding: 9px 14px;
+  --btn-radius: 10px;
+  --font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --shadow-strong: 0 16px 40px rgba(2,6,23,0.7);
+  --shadow-soft: 0 8px 22px rgba(2,6,23,0.45);
+  --border-subtle: rgba(255,255,255,0.04);
+}
+
+/* -------------------- СВЕТЛАЯ ТЕМА -------------------- */
+body[data-theme="light"]{
+  --bg: #f5f7fb;
+  --surface: #eef3f8;
+  --card: #ffffff;
+  --muted: #475569;
+  --text: #091023;
+  --accent: #2563eb;
+  --accent-600: #1e40af;
+  --success: #059669;
+  --danger: #dc2626;
+  --glass: rgba(15,23,36,0.04);
+  --muted-contrast: rgba(15,23,36,0.8);
+  --shadow-strong: 0 14px 34px rgba(15,23,36,0.06);
+  --shadow-soft: 0 6px 18px rgba(15,23,36,0.04);
+  --border-subtle: rgba(15,23,36,0.06);
+}
+
+/* -------------------- БАЗА -------------------- */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-family);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.35;
+}
+
+/* -------------------- ЛЕЙАУТ -------------------- */
+.app{width:100%;height:100%;display:flex;flex-direction:column}
+.site-header{
+  height:var(--header-height);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;
+  border-bottom:1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));
+  position:sticky;top:0;z-index:60;
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.brand-text h1{font-size:16px;margin:0}
+.header-center{flex:1;display:flex;justify-content:center;padding:0 16px}
+.header-right{display:flex;align-items:center;gap:8px}
+
+/* -------------------- ПОИСК -------------------- */
+.search{
+  background:var(--glass);
+  padding:10px 12px;
+  border-radius:10px;
+  color:var(--muted);
+  border:1px solid var(--border-subtle);
+  width:520px; max-width:60%;
+  font-size:14px;
+}
+
+/* -------------------- КОЛОНКИ -------------------- */
+.layout{display:flex;flex:1;height:calc(100vh - var(--header-height));overflow:hidden}
+.sidebar{
+  width:var(--sidebar-width);min-width:var(--sidebar-width);
+  background: linear-gradient(180deg, rgba(11,18,28,0.6), transparent);
+  padding:18px;border-right:1px solid var(--border-subtle);overflow:auto;
+}
+body[data-theme="light"] .sidebar{
+  background: linear-gradient(180deg, rgba(15,23,36,0.02), rgba(15,23,36,0.01));
+  border-right:1px solid var(--border-subtle);
+}
+.main{flex:1;padding:18px;overflow:auto}
+
+/* -------------------- САЙДБАР: читаемость -------------------- */
+.sidebar ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.sidebar li{
+  padding:10px 12px;border-radius:8px;color:var(--muted);cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  transition: all 140ms ease;
+  background:transparent;border:1px solid transparent;
+}
+.sidebar li:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.02);
+  color:var(--text);
+  border-color: rgba(255,255,255,0.02);
+}
+body[data-theme="light"] .sidebar li:hover{
+  background: rgba(15,23,36,0.03);
+  color:var(--text);
+  border-color: var(--border-subtle);
+}
+.sidebar li.active{
+  background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(59,130,246,0.06));
+  color:var(--text);
+  box-shadow: var(--shadow-soft);
+  border-color: rgba(59,130,246,0.06);
+}
+body[data-theme="light"] .sidebar li.active{
+  background: linear-gradient(90deg, rgba(37,99,235,0.08), rgba(59,130,246,0.03));
+  border:1px solid var(--border-subtle);
+}
+
+/* Повысить контраст текста меню в light */
+.sidebar li, .sidebar li .small { color: var(--muted); }
+body[data-theme="light"] .sidebar li, body[data-theme="light"] .sidebar li .small { color: var(--muted); }
+
+/* -------------------- КОНТРОЛЫ И КАРТОЧКИ -------------------- */
+.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.card{background:var(--card);border-radius:10px;padding:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+.centerCard{display:flex;align-items:center;justify-content:center}
+
+/* -------------------- КНОПКИ -------------------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  padding:var(--btn-padding);
+  border-radius:var(--btn-radius);
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  border:0;
+  cursor:pointer;
+  box-shadow: 0 8px 22px rgba(37,99,235,0.12);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  user-select:none;
+  font-size:14px;
+  line-height:1;
+}
+.btn:hover{ transform: translateY(-3px); box-shadow: 0 18px 40px rgba(37,99,235,0.14); }
+.btn:active{ transform: translateY(0); box-shadow: 0 6px 14px rgba(37,99,235,0.10); }
+.btn[disabled]{ opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn.ghost{
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border-subtle);
+  box-shadow:none;
+}
+.btn.ghost:hover{
+  color: var(--text);
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.04);
+}
+body[data-theme="light"] .btn.ghost{ border-color: var(--border-subtle); }
+.btn.danger{ background: var(--danger); box-shadow: 0 8px 20px rgba(239,68,68,0.12); }
+
+/* -------------------- ТАБЛИЦЫ -------------------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{color:var(--muted);text-align:left;padding:8px 6px;font-weight:700;font-size:13px}
+tbody td{padding:10px 6px;border-top:1px solid var(--border-subtle)}
+tbody tr{cursor:pointer}
+tbody tr:hover{ background: rgba(255,255,255,0.01); }
+
+/* Акцентная подсветка выбранной строки (можно проставлять класс selected через JS) */
+tbody tr.selected{
+  background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(59,130,246,0.04));
+  color: var(--text);
+}
+
+/* -------------------- ФОРМЫ -------------------- */
+.row{display:flex;gap:8px}
+input[type=text], input[type=email], input[type=date], select, textarea, input[type=color] {
+  background: transparent;
+  border:1px solid var(--border-subtle);
+  padding:10px 12px;
+  border-radius:8px;
+  color:var(--text);
+  width:100%;
+  font-size:14px;
+  transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
+}
+label{font-size:13px;margin-bottom:6px;display:block;color:var(--muted)}
+textarea{min-height:84px; resize:vertical;}
+
+/* Важные поля (логин, email в модалке) — принудительно белый фон в light-theme */
+body[data-theme="light"] #loginView .card input,
+body[data-theme="light"] #loginView .card textarea,
+body[data-theme="light"] #userModal input[type=email],
+body[data-theme="light"] #userModal input[type=text],
+body[data-theme="light"] #userModal input[type=password],
+body[data-theme="light"] #userModal textarea {
+  background: #ffffff;
+  color: var(--text);
+  border: 1px solid rgba(15,23,36,0.08);
+  box-shadow: none;
+}
+
+/* Плейсхолдер */
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.45); }
+body[data-theme="light"] input::placeholder, body[data-theme="light"] textarea::placeholder { color: rgba(15,23,36,0.45); }
+
+/* Фокус */
+input:focus, textarea:focus, select:focus{
+  outline: none;
+  box-shadow: 0 8px 28px rgba(37,99,235,0.08);
+  border-color: var(--accent-600);
+}
+body[data-theme="light"] input:focus, body[data-theme="light"] textarea:focus, body[data-theme="light"] select:focus{
+  box-shadow: 0 10px 30px rgba(30,64,175,0.06);
+  border-color: var(--accent-600);
+}
+
+/* -------------------- МОДАЛЬНОЕ ОКНО КЛИЕНТА — СТРУКТУРА -------------------- */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;z-index:70}
+.modal{
+  width:980px;max-width:96%;
+  background:var(--card);
+  border-radius:14px;
+  padding:18px;
+  box-shadow:var(--shadow-strong);
+  max-height:88vh;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+/* Заголовок */
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.title-block{display:flex;gap:12px;align-items:center}
+.avatar{
+  width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  font-size:20px;color:var(--text);
+  border:1px solid var(--border-subtle);
+}
+.modal-actions{display:flex;gap:8px;align-items:center}
+
+/* Тело модалки: явная сетка: левая форма + правая колонка-резюме */
+.modal-body{
+  display:grid;
+  grid-template-columns: 1fr 340px;
+  gap:18px;
+  overflow:auto;
+  padding-right:6px;
+  align-items:start;
+}
+@media (max-width: 900px){ .modal-body{ grid-template-columns: 1fr; } }
+
+/* Левая часть: логичные "строки" (field-row) для читаемости */
+.modal-body .left{ padding-right:4px; }
+.modal-body .left .field-row{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:8px;
+  align-items:start;
+  margin-bottom:10px;
+}
+.modal-body .left .field-row.two{ grid-template-columns: repeat(2, 1fr); }
+.modal-body .left .field-row.full{ grid-template-columns: 1fr; }
+
+.modal-body .left .field{ display:flex;flex-direction:column; }
+.modal-body label{ margin-bottom:6px; color:var(--muted); font-size:13px; }
+.modal-body input, .modal-body select, .modal-body textarea{ background: transparent; color:var(--text); }
+
+/* Унифицированная высота полей */
+.modal-body .left .field input,
+.modal-body .left .field select,
+.modal-body .left .field textarea{
+  min-height:44px;
+  padding:10px 12px;
+  border-radius:8px;
+}
+
+/* Правая колонка — резюме/управление */
+.modal-body .right{
+  display:flex;flex-direction:column;gap:12px;
+  min-width:240px; max-width:340px;
+}
+
+/* Статус-чип */
+#statusChip{
+  display:inline-block;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color:var(--text); font-weight:700; border:1px solid var(--border-subtle);
+}
+
+/* Комментарии и журнал */
+.comments{margin-top:10px;max-height:280px;overflow:auto;border-top:1px dashed var(--border-subtle);padding-top:10px}
+.comment{
+  padding:10px;border-radius:10px;background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  margin-bottom:10px;color:var(--text); border:1px solid rgba(255,255,255,0.02);
+}
+.log{font-size:13px;color:var(--muted);max-height:220px;overflow:auto;margin-top:8px}
+
+/* Кнопки в модалке — компактные */
+.modal .btn{ font-size:13px; padding:8px 12px; }
+
+/* -------------------- СТАТУСЫ: дизайн -------------------- */
+.status-list, .status-rows { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.status-row{
+  display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border:1px solid var(--border-subtle);
+}
+.status-row .left{display:flex;align-items:center;gap:12px}
+.status-swatch{ width:16px;height:16px;border-radius:4px; display:inline-block; box-shadow: 0 6px 18px rgba(0,0,0,0.28); border: 2px solid rgba(255,255,255,0.12); }
+body[data-theme="light"] .status-swatch{ border: 2px solid rgba(15,23,36,0.12); box-shadow: 0 6px 18px rgba(15,23,36,0.06); }
+.status-name{ font-weight:700; color:var(--text); }
+.status-actions .btn.ghost{ padding:6px 10px; font-size:13px; }
+
+/* Форма добавления статуса */
+.status-add{
+  display:flex;gap:8px;align-items:center;margin-top:12px;padding:10px;border-radius:8px;border:1px dashed var(--border-subtle);
+  background:transparent;
+}
+.status-add input[type=text]{ flex:1; }
+.status-add input[type=color]{ width:44px;height:36px;padding:0;border-radius:8px;border:1px solid var(--border-subtle); }
+
+/* -------------------- СТАТИСТИКА: структура -------------------- */
+.stats-grid{
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:18px;
+  margin-top:12px;
+}
+@media (max-width: 1000px){ .stats-grid{ grid-template-columns: 1fr; } }
+
+.summary-cards{
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+}
+.summary-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  padding:12px;border-radius:10px;border:1px solid var(--border-subtle);
+  display:flex;flex-direction:column;gap:6px;
+}
+.chart-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  padding:12px;border-radius:10px;border:1px solid var(--border-subtle);
+  margin-top:12px;
+}
+body[data-theme="light"] .summary-card, body[data-theme="light"] .chart-card{ background:var(--card); }
+
+/* -------------------- SELECTS / OPTIONs READABILITY -------------------- */
+
+/* Основной стиль select */
+select, .modal select, input[type="color"]{
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+  border-radius: 8px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Более заметный select в тёмной теме */
+body:not([data-theme="light"]) select, body:not([data-theme="light"]) .modal select{
+  background: rgba(255,255,255,0.04);
+}
+
+/* Опции (некоторые браузеры поддерживают) */
+select option { color: var(--text); background: var(--card); }
+
+/* Конкретные селекты назначения/статистики — усилить */
+#assignUserSelect, #assignUserSelectAdmin, #statsUserSelect {
+  background: rgba(255,255,255,0.035);
+  color: var(--text);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+#assignUserSelect:focus, #assignUserSelectAdmin:focus, #statsUserSelect:focus, select:focus {
+  box-shadow: 0 10px 30px rgba(37,99,235,0.08);
+  border-color: var(--accent-600);
+  outline: none;
+}
+
+/* -------------------- STATUS SWATCHES FIX (видны всегда) -------------------- */
+.status-dot, .status-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 2px solid rgba(255,255,255,0.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  vertical-align: middle;
+  margin-right: 10px;
+}
+body[data-theme="light"] .status-dot, body[data-theme="light"] .status-swatch {
+  border: 2px solid rgba(15,23,36,0.12);
+  box-shadow: 0 6px 18px rgba(15,23,36,0.06);
+}
+
+/* -------------------- Кнопки редактирования пользователей (виднее в dark) -------------------- */
+button.editUser, .editUser {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+button.editUser:hover, .editUser:hover {
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.06);
+}
+body[data-theme="light"] button.editUser, body[data-theme="light"] .editUser {
+  border-color: var(--border-subtle);
+}
+body[data-theme="light"] button.editUser:hover, body[data-theme="light"] .editUser:hover{
+  background: rgba(15,23,36,0.03);
+}
+
+/* -------------------- АКССЕССИБИЛИТИ / ФОКУС -------------------- */
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 2px;
+}
+
+/* -------------------- АДАПТИВ -------------------- */
+@media(max-width:1100px){
+  .sidebar{display:none}
+  .search{max-width:60%}
+  .modal{width:96%}
+}
+@media(max-width:700px){
+  .search{display:none}
+  .modal-body{grid-template-columns:1fr}
+  .modal-body .right{width:100%}
+  .sidebar{display:none}
+}
+
+/* -------------------- ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ -------------------- */
+.required-error{border-color:#ff6b6b !important; box-shadow:0 0 0 4px rgba(239,68,68,0.06); }
+.flex{display:flex;gap:8px;align-items:center}
+.status-list{display:flex;gap:6px;flex-wrap:wrap}
+
+.small{font-size:12px;color:var(--muted)}
+.muted{color:var(--muted)}
+.card-mini{ background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border-radius:10px;padding:10px;border:1px solid var(--border-subtle); color:var(--text); }
+
+/* -------------------- НЕБОЛЬШАЯ ПОЛИРОВКА -------------------- */
+.modal .btn{ font-size:13px; padding:8px 12px; }
+.comment small{ color:var(--muted); }
+
+/* Конец файла */
