@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Demo CRM — Улучшенная версия</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- header (full-width) -->
+    <header class="site-header">
+      <div class="header-left">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <rect width="100%" height="100%" rx="6" fill="#0ea5e9"/>
+          <path d="M6 12h12M12 6v12" stroke="#062e42" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <div class="brand-text">
+          <h1>Demo CRM</h1>
+          <div class="small muted">Мини-CRM — локально в браузере</div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <input id="globalSearch" class="search" placeholder="Поиск по имени, email, телефону..." />
+      </div>
+
+      <div class="header-right">
+        <button id="themeToggle" class="btn ghost" title="Переключить тему">🌙</button>
+        <div id="userSummary" style="display:flex;gap:8px;align-items:center"></div>
+        <div style="width:8px"></div>
+        <button id="logoutNav" class="btn ghost mobile-hide">Выйти</button>
+      </div>
+    </header>
+
+    <!-- main layout: sidebar + content -->
+    <div class="layout">
+      <aside class="sidebar">
+        <ul id="menu">
+          <li data-view="leads" class="active">Лиды</li>
+          <li data-view="statuses">Статусы</li>
+          <li data-view="users">Управление (админ)</li>
+          <li data-view="activity">Журнал действий</li>
+          <li data-view="stats">Статистика</li>
+        </ul>
+
+        <div id="adminStats" class="card-mini" style="margin-top:14px;display:none"></div>
+        <div style="margin-top:14px" class="muted small">Версия: demo / локально</div>
+      </aside>
+
+      <main class="main">
+        <!-- login view -->
+        <div id="loginView" class="centerCard" style="display:none;max-width:640px;margin:auto;padding:20px">
+          <div class="card">
+            <h2>Вход в CRM</h2>
+            <p class="muted">Тестовые аккаунты: admin@crm.local / admin, user@crm.local / user, aff@crm.local / aff</p>
+            <form id="loginForm">
+              <label>Email</label>
+              <input id="loginEmail" type="email" required />
+              <label>Пароль</label>
+              <input id="loginPassword" type="text" required />
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <button class="btn" type="submit">Войти</button>
+                <button id="demoFill" type="button" class="btn ghost">Демо</button>
+              </div>
+              <div id="loginMsg" class="muted small" style="margin-top:8px"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- app views -->
+        <div id="appViews" style="display:none">
+          <div class="controls">
+            <div style="display:flex;gap:8px;align-items:center">
+              <div id="viewTitle" style="font-weight:700">Лиды</div>
+              <div id="currentRole" class="pill">—</div>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="addClientBtn" class="btn">Добавить клиента</button>
+              <button id="createUserBtn" class="btn ghost" style="display:none">Создать пользователя</button>
+              <button id="downloadCsvTemplateBtn" class="btn ghost">Скачать CSV-шаблон</button>
+              <button id="importCsvBtn" class="btn ghost">Импорт CSV</button>
+              <input id="csvFileInput" type="file" accept=".csv" style="display:none" />
+            </div>
+          </div>
+
+          <div class="card" id="mainCard">
+            <div id="viewContainer"></div>
+          </div>
+
+          <footer>Demo CRM — хранит всё в localStorage. Не используйте реальные пароли.</footer>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- client modal (improved layout) -->
+  <div id="clientModal" class="modal-backdrop" style="display:none" aria-hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div class="title-block">
+          <div class="avatar" id="clientAvatar">👤</div>
+          <div>
+            <h2 id="modalTitle">Карточка клиента</h2>
+            <div class="small muted" id="clientMeta">—</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <div id="statusChip" class="pill">—</div>
+          <div id="assignedToBadge" class="pill small" style="margin-left:8px" id="${Users.byId(uidSel)?.name">Назначен: </div>
+          <button id="closeModal" class="btn ghost">Закрыть</button>
+        </div>
+      </div>
+
+      <div class="modal-body" id="clientModalBody">
+        <div class="left">
+          <div class="row">
+            <div style="flex:1">
+              <label>Имя</label>
+              <input id="c_firstName" type="text" />
+            </div>
+            <div style="flex:1">
+              <label>Фамилия</label>
+              <input id="c_lastName" type="text" />
+            </div>
+            <div style="width:200px">
+              <label>Статус</label>
+              <select id="c_status" style="width:100%"></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Email</label>
+              <input id="c_email" type="email" />
+            </div>
+            <div style="width:220px">
+              <label>Телефон</label>
+              <input id="c_phone" type="text" />
+            </div>
+            <div style="width:160px">
+              <label>Источник</label>
+              <input id="c_source" type="text" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Номер карты</label>
+              <input id="c_card" type="text" placeholder="**** **** **** 1234" />
+            </div>
+            <div style="width:160px">
+              <label>Сумма (USD)</label>
+              <input id="c_amount" type="text" />
+            </div>
+            <div style="width:160px">
+              <label>Сумма потери</label>
+              <input id="c_loss" type="text" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Дата регистрации</label>
+              <input id="c_regDate" type="date" />
+            </div>
+            <div style="flex:1">
+              <label>Дата рождения</label>
+              <input id="c_birthDate" type="date" />
+            </div>
+          </div>
+
+          <div style="margin-top:8px">
+            <label>Описание</label>
+            <textarea id="c_description" rows="4"></textarea>
+          </div>
+
+          <div class="row" style="margin-top:10px;align-items:center">
+            <button id="saveClientBtn" class="btn">Сохранить</button>
+            <button id="deleteClientBtn" class="btn" style="background:var(--danger)">Удалить</button>
+            <div id="clientSaveMsg" class="muted small" style="margin-left:12px"></div>
+          </div>
+
+          <div style="margin-top:14px">
+            <h3 style="margin:0 0 6px 0">Комментарии</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="commentText" type="text" placeholder="Написать комментарий..." />
+              <button id="addCommentBtn" class="btn">Добавить</button>
+            </div>
+            <div class="comments" id="commentsList"></div>
+          </div>
+        </div>
+
+        <div class="right" id="clientRight">
+          <!-- для user будет пусто; для admin/affiliator наполняется JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- user modal (unchanged structure) -->
+  <div id="userModal" class="modal-backdrop" style="display:none" aria-hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 id="userModalTitle">Пользователь</h2>
+        <button id="userModalClose" class="btn ghost">Закрыть</button>
+      </div>
+
+      <div style="display:flex;gap:12px">
+        <div style="flex:1">
+          <label>Имя</label>
+          <input id="userModalName" type="text" />
+          <label style="margin-top:8px">Email</label>
+          <input id="userModalEmail" type="email" />
+          <label style="margin-top:8px">Пароль</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="userModalPassword" type="text" placeholder="Оставьте пустым, чтобы не менять" />
+            <button id="togglePasswordView" class="btn ghost" title="Показать/скрыть пароль" type="button">👁</button>
+          </div>
+          <label style="margin-top:8px">Роль</label>
+          <select id="userModalRole">
+            <option value="user">user</option>
+            <option value="affiliator">affiliator</option>
+            <option value="admin">admin</option>
+          </select>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="userModalSave" class="btn">Сохранить</button>
+            <button id="userModalDelete" class="btn" style="background:var(--danger)">Удалить пользователя</button>
+            <div id="userModalMsg" class="muted small" style="margin-left:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
